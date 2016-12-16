@@ -3,8 +3,11 @@ knn realization on python
 
 #file introduction:
 'knn.py' --- basic linear searching
+
 'knn_kd.py' --- use kd_tree to search k-nearest neighbor
+
 'knn_kd_scratch' --- use kd_tree to search k-nearest neighbor, and kd_tree is realized from scratch, see 'kdtree.py'
+
 'kdtree.py' --- a kdtree, including kdtree's construction and k-nearest-seach
 
 #example USAGE:
