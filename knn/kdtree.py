@@ -20,7 +20,7 @@ class Node:
         self.right = None
         self.point = point  # indicates the point sample for this node
         self.axis = axis   # indicates the splitting axis for this node
-        self.flag = 0   # flag used in traverse, to indicate whether visited, 0 means not visited
+        # self.flag = 0   # flag used in traverse, to indicate whether visited, 0 means not visited
 
 
 class LargeHeap:
@@ -54,6 +54,9 @@ class LargeHeap:
         i = 0
         # attention to exchange with the large one of the children
         while (2*i + 1) < self.len:
+            tt = self.heaplist[(2*i + 1)][1]
+            if 2*i+2 < self.len:
+                tt = self.heaplist[(2*i + 2)][1]
             max_ind = (2*i + 1) if (self.heaplist[(2*i + 1)][1] > self.heaplist[(2*i + 2)][1] or \
                                                      (2*i+2 >= self.len)) else (2*i + 2)
             if self.heaplist[i][1] < self.heaplist[max_ind][1]:
@@ -123,11 +126,14 @@ class KdTree:
             med -= 1
         current_node.axis = axis
         current_node.point = temp[med]
+        tt = temp[med]
         axis = (axis + 1) % self.n_dim
         if temp[:med, :].shape[0] >= 1:
+            tt = temp[:med, :]
             current_node.left = Node()
             self.createTree(temp[:med, :], axis, current_node.left)
         if temp[(med+1):, :].shape[0] >= 1:
+            tt = temp[(med+1):, :]
             current_node.right = Node()
             self.createTree(temp[(med+1):, :], axis, current_node.right)
 
@@ -143,6 +149,8 @@ class KdTree:
         nearest_leaf = current_root
         while nearest_leaf is not None:
             iter_list.append(nearest_leaf)  # store the path
+            tt = nearest_leaf.point
+            tt1 = nearest_leaf.axis
             if target[nearest_leaf.axis] < nearest_leaf.point[nearest_leaf.axis]:
                 if nearest_leaf.left is not None:  # then go to the left child
                     nearest_leaf = nearest_leaf.left
@@ -153,6 +161,14 @@ class KdTree:
                     nearest_leaf = nearest_leaf.right
                 else:
                     break
+        while nearest_leaf.left is not None or nearest_leaf.right is not None:
+            if nearest_leaf.left is not None:
+                nearest_leaf = nearest_leaf.left
+                iter_list.append(nearest_leaf)
+            if nearest_leaf.right is not None:
+                nearest_leaf = nearest_leaf.right
+                iter_list.append(nearest_leaf)
+        tt = nearest_leaf.point
         """
         step2: find the k nearest by backtracking upside
         Two situations to add the point into the heap k_nearest_heap
@@ -165,15 +181,15 @@ class KdTree:
         current_max_dis = self.distance(target, nearest_leaf.point[:self.n_dim])
         k_nearest_heap.add(nearest_leaf, current_max_dis)
         tmp = iter_list.pop()
-        tmp.flag = 1
         '''
+        former_node = nearest_leaf  # the former 'current_node', to indicate whether go through this child
         while iter_list != []:
             if k_nearest_heap.len > 0:
                 current_max_dis = k_nearest_heap.heaplist[0][1]
             else:
                 current_max_dis = -1
             current_pointer = iter_list.pop()
-            current_pointer.flag = 1   # means already visited
+            tt = current_pointer.point
             dis = self.distance(current_pointer.point[:self.n_dim], target)
             if k_nearest_heap.len < k:
                 k_nearest_heap.add(current_pointer, dis)
@@ -184,17 +200,18 @@ class KdTree:
             current_max_dis = k_nearest_heap.heaplist[0][1]
             axis = current_pointer.axis
             if abs(target[axis] - current_pointer.point[axis]) >= current_max_dis:
-                # attention here: the condition to not search on the subspace is not intersect with the axis
+                former_node = current_pointer
                 # if not intersect with
                 continue
-            if current_pointer.left is not None and current_pointer.left.flag == 0:
+            if current_pointer.left is not None and current_pointer.left != former_node:
+                tt = current_pointer.left
                 # iter_list.append(current_pointer.left)
-                # attention here to iteration search on subspace, not just add the child
                 self.k_nearest_neighbor(k, target, current_pointer.left, k_nearest_heap)
-            if current_pointer.right is not None and current_pointer.right.flag == 0:
+            if current_pointer.right is not None and current_pointer.right != former_node:
+                tt = current_pointer.right
                 # iter_list.append(current_pointer.righat)
-                # attention here to iteration search on subspace, not just add the child
                 self.k_nearest_neighbor(k, target, current_pointer.right, k_nearest_heap)
+            former_node = current_pointer
         rlist = []
         rdis = []
         for ele in k_nearest_heap.heaplist:

@@ -14,7 +14,7 @@ import time
 start = time.clock()
 
 
-k = sys.argv[1]
+k = int(sys.argv[1])
 train_file = sys.argv[2]
 test_file = sys.argv[3]
 
@@ -34,17 +34,6 @@ test = test[:, 1:]  # removing id
 tree = kdtree.KdTree(n_dim=train.shape[1])
 tree.createTree(np.c_[train, y])
 
-def clear_node(root):
-    """
-    the function used to clear all the nodes's flag to 0
-    root: the root node of a tree
-    """
-    if root is not None:
-        root.flag = 0
-    if root.left is not None:
-        clear_node(root.left)
-    if root.right is not None:
-        clear_node(root.right)
         
 # vote for prediction
 y_test = []   # storing the y of testing data
@@ -56,7 +45,6 @@ for i in range(test.shape[0]):
         classCounter[pos[-1]] = classCounter.get(pos[-1], 0) + 1
     y_test.append(sorted(classCounter)[0])
     print 'predicted: y is {0}'.format(y_test[-1])
-    clear_node(tree.root)   # clear the tree's nodes's flag after each search
 print 'all prediction is done, writing...'
 with open('result_knn_kdtree_fromscratch.csv','w') as fi:
     for i in range(len(y_test)):
