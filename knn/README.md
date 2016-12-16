@@ -14,8 +14,13 @@ knn realization on python
 python knn.py 10 train.csv test.csv   
 @ 10 indicates the knn's k, train.csv is the trainning samples, test.csv is the testing samples
 
-python knn_kd.py 10 train.csv test.csv
-@ the same of knn.py
+python knn_kd.py 10 train.csv test.csv 
 
 python knn_kd_scratch.py 10 train.csv test.csv
-@ the same of knn.py
+
+# Input file DESCRIPTION
+train.csv: rows are trainning samples, the first col is id, last col is label, others are features used for trainning.
+
+test.csv: row are testing samples, the first col is id, others are features the same as train.csv
+
+**And the first line of this two file is the header.**
